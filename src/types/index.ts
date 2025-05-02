@@ -1,51 +1,108 @@
-export type Platform = 'web' | 'ios' | 'android'
+export type Platform = "web" | "ios" | "android";
 
-export type SyntheticPrivKey = 'nip07' | 'none';
+export type SyntheticPrivKey = "nip07" | "none";
 export type PrivKey = string | SyntheticPrivKey;
 
-export type RavenState = { ready: boolean, dmsDone: boolean, syncDone: boolean };
+export type RavenState = {
+  ready: boolean;
+  dmsDone: boolean;
+  syncDone: boolean;
+};
 
-export type Keys = {
-    pub: string;
-    priv: string;
-} | {
-    pub: string;
-    priv: SyntheticPrivKey;
-} | null;
+export type Keys =
+  | {
+      pub: string;
+      priv: string;
+    }
+  | {
+      pub: string;
+      priv: SyntheticPrivKey;
+    }
+  | null;
 
+export type KeysV2 = {
+  // Public
+  publicKey: string;
+  npub: `npub${string}`;
+  // Private
+  privateSigner: PrivKey;
+  nsec: `nsec${string}`;
+  privateKey: string;
+};
 
 export type Metadata = {
-    name: string,
-    about: string,
-    picture: string
-}
+  name: string;
+  about: string;
+  picture: string;
+};
 
-export type DirectContact = { pub: string, npub: string };
+export type DirectContact = { pub: string; npub: string };
 
-export type Profile = { id: string, creator: string, created: number, nip05: string } & Metadata;
+export type Profile = {
+  id: string;
+  creator: string;
+  created: number;
+  nip05: string;
+} & Metadata;
 
-export type Channel = { id: string, creator: string, created: number } & Metadata;
+export type Channel = {
+  id: string;
+  creator: string;
+  created: number;
+} & Metadata;
 
 export type ChannelUpdate = { channelId: string } & Channel;
 
-export type EventDeletion = { eventId: string, why: string };
+export type EventDeletion = { eventId: string; why: string };
 
-export type PublicMessage = { id: string, root: string, content: string, creator: string, created: number, children?: PublicMessage[], reactions?: Reaction[], mentions: string[] };
+export type PublicMessage = {
+  id: string;
+  root: string;
+  content: string;
+  creator: string;
+  created: number;
+  children?: PublicMessage[];
+  reactions?: Reaction[];
+  mentions: string[];
+};
 
-export type DirectMessage = { id: string, root?: string, content: string, peer: string, creator: string, created: number, children?: DirectMessage[], reactions?: Reaction[], mentions: string[], decrypted: boolean };
+export type DirectMessage = {
+  id: string;
+  root?: string;
+  content: string;
+  peer: string;
+  creator: string;
+  created: number;
+  children?: DirectMessage[];
+  reactions?: Reaction[];
+  mentions: string[];
+  decrypted: boolean;
+};
 
 export type Message = PublicMessage | DirectMessage;
 
-export type ChannelMessageHide = { id: string, reason: string };
+export type ChannelMessageHide = { id: string; reason: string };
 
-export type ChannelUserMute = { pubkey: string, reason: string };
+export type ChannelUserMute = { pubkey: string; reason: string };
 
 export type RelayDict = Record<string, { read: boolean; write: boolean }>;
 
-export type MuteList = { pubkeys: string[], encrypted: string };
+export type MuteList = { pubkeys: string[]; encrypted: string };
 
-export type Reaction = { id: string, message: string, peer: string, content: string, creator: string, created: number };
+export type Reaction = {
+  id: string;
+  message: string;
+  peer: string;
+  content: string;
+  creator: string;
+  created: number;
+};
 
-export type ReactionCombined = { symbol: string, authors: string[], count: number, userReaction: Reaction | undefined };
+export type ReactionCombined = {
+  symbol: string;
+  authors: string[];
+  count: number;
+  userReaction: Reaction | undefined;
+};
 
 export type ReadMarkMap = Record<string, number>;
