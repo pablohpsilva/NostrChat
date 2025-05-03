@@ -6,13 +6,13 @@ import {
 } from "@nostr-dev-kit/ndk";
 import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 import { nip04 } from "nostr-tools";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
-import { getNDK } from "@/components/NDKHeadless";
+import { getNDK } from "../components/NDKHeadless";
 
 const ndk = getNDK();
 
-export default function useEncryptedDirectMessage({
+export function useEncryptedDirectMessage({
   masterPrivateKeyHex,
 }: {
   masterPrivateKeyHex: string | null;
@@ -141,9 +141,7 @@ export default function useEncryptedDirectMessage({
    * @returns The decrypted content or null if decryption fails
    */
   const decryptMessage = async (event: NDKEvent): Promise<string | null> => {
-    if (!currentUser?.pubkey) {
-      return null;
-    }
+    if (!currentUser?.pubkey) return null;
 
     try {
       // For messages sent by the current user
@@ -179,42 +177,37 @@ export default function useEncryptedDirectMessage({
   };
 
   // Memoized function to decrypt a single message
-  const decryptSingleMessage = async (message: NDKEvent): Promise<NDKEvent> => {
-    // Skip if already decrypted
-    // if (decryptedIdsRef.current.has(message.id)) {
-    //   return message;
-    // }
+  const decryptSingleMessage = useCallback(
+    async (message: NDKEvent): Promise<void> => {
+      // Skip if already decrypted
+      if (decryptedIdsRef.current.has(message.id)) return;
 
-    try {
-      const content = await decryptMessage(message);
+      try {
+        const content = await decryptMessage(message);
 
-      // Update state with new decrypted message without causing re-render of all
-      setDecryptedMessages((prev) => {
-        if (content) {
-          return { ...prev, [message.id]: content };
-        } else {
-          return { ...prev, [message.id]: "Unable to decrypt message" };
-        }
-      });
+        // Update state with new decrypted message without causing re-render of all
+        setDecryptedMessages((prev) => {
+          if (content) {
+            return { ...prev, [message.id]: content };
+          } else {
+            return { ...prev, [message.id]: "Unable to decrypt message" };
+          }
+        });
 
-      // Mark as decrypted
-      decryptedIdsRef.current.add(message.id);
-
-      const result = Object.assign({}, message, { content });
-
-      return result;
-    } catch (error) {
-      console.error("Error decrypting message:", error);
-      setDecryptedMessages((prev) => ({
-        ...prev,
-        [message.id]: "Error decrypting message",
-      }));
-      // Still mark as attempted so we don't retry indefinitely
-      decryptedIdsRef.current.add(message.id);
-    }
-
-    return message;
-  };
+        // Mark as decrypted
+        decryptedIdsRef.current.add(message.id);
+      } catch (error) {
+        console.error("Error decrypting message:", error);
+        setDecryptedMessages((prev) => ({
+          ...prev,
+          [message.id]: "Error decrypting message",
+        }));
+        // Still mark as attempted so we don't retry indefinitely
+        decryptedIdsRef.current.add(message.id);
+      }
+    },
+    [decryptMessage]
+  );
 
   return {
     directMessages,

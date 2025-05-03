@@ -3,7 +3,8 @@ import { NDKEvent } from "@nostr-dev-kit/ndk";
 import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 
 import { getKeys } from "@/libs/local-storage";
-import { useSearchDirectMessages } from "./useSearchDirectMessages";
+import { useEncryptedDirectMessage } from "./useEncryptedDirectMessage";
+import { useSearchUser } from "./useSearchUser";
 
 /**
  * Hook to search for content in the Nostr network
@@ -16,16 +17,24 @@ export function useSearch() {
     null
   );
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [results, setResults] = useState<NDKEvent[]>([]);
+  const [decryptedDirectMessages, setDecryptedDirectMessages] = useState<
+    NDKEvent[]
+  >([]);
   const {
     directMessages,
-    loading,
-    error,
+    loading: directMessagesLoading,
+    error: directMessagesError,
     loadDirectMessages,
     decryptedIdsRef,
     decryptSingleMessage,
-  } = useSearchDirectMessages({ masterPrivateKeyHex });
+  } = useEncryptedDirectMessage({ masterPrivateKeyHex });
   const messages = Object.values(directMessages).flat();
+  const {
+    search: searchUser,
+    users,
+    loading: userLoading,
+    error: userError,
+  } = useSearchUser();
 
   /**
    * Search for content in the Nostr network
@@ -36,6 +45,7 @@ export function useSearch() {
    */
   const search = async (query: string): Promise<void> => {
     setSearchQuery(query);
+    searchUser(query);
   };
 
   useEffect(() => {
@@ -88,7 +98,7 @@ export function useSearch() {
         }
 
         // Update results state after all processing is complete
-        setResults(allResults);
+        setDecryptedDirectMessages(allResults);
       };
 
       // Execute the async function
@@ -98,8 +108,13 @@ export function useSearch() {
 
   return {
     search,
-    results,
-    loading,
-    error,
+    decryptedDirectMessages,
+    directMessagesLoading,
+    directMessagesError,
+    users,
+    userLoading,
+    userError,
+    error: directMessagesError || userError,
+    loading: directMessagesLoading || userLoading,
   };
 }

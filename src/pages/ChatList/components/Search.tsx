@@ -10,7 +10,7 @@ export default function Search({
 }) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { search, results } = useSearch();
+  const { search, decryptedDirectMessages } = useSearch();
 
   const handleInputClick = () => {
     setIsOverlayOpen(true);
@@ -96,16 +96,16 @@ export default function Search({
             )} */}
             {searchQuery ? (
               <div className="text-xs text-black/40 w-full text-center">
-                Total results: {results.length}
+                Total results: {decryptedDirectMessages.length}
               </div>
             ) : (
               <div className="text-gray-400 text-center mt-10">
                 Type to search on nostr
               </div>
             )}
-            {results && results.length > 0 ? (
+            {decryptedDirectMessages && decryptedDirectMessages.length > 0 ? (
               <div className="space-y-4 mt-4">
-                {results.map((event) => (
+                {decryptedDirectMessages.map((event) => (
                   <div
                     key={event.id}
                     className="border border-gray-200 rounded-lg p-4"

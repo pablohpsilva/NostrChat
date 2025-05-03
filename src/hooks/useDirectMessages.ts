@@ -5,7 +5,7 @@ import { nip04 } from "nostr-tools";
 
 import { getNDK } from "@/components/NDKHeadless";
 import { getKeys } from "@/libs/local-storage";
-import { useSearchDirectMessages } from "./useSearchDirectMessages";
+import { useEncryptedDirectMessage } from "./useEncryptedDirectMessage";
 const ndk = getNDK();
 
 /**
@@ -27,7 +27,7 @@ export function useDirectMessages() {
     decryptedMessages,
     decryptedIdsRef,
     decryptSingleMessage,
-  } = useSearchDirectMessages({ masterPrivateKeyHex });
+  } = useEncryptedDirectMessage({ masterPrivateKeyHex });
 
   /**
    * Send a direct message to a user
