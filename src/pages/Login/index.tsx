@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useNDKSessionLogin } from "@nostr-dev-kit/ndk-hooks";
 import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
@@ -13,6 +13,7 @@ import { ImportKeyForm } from "./components/ImportKeyForm";
 import { CreateAdvancedAccountForm } from "./components/CreateAdvancedAccountForm";
 import { KeysV2 } from "@/types";
 import { ImportKeyAdvancedForm } from "./components/ImportKeyAdvancedForm";
+import { getKeys } from "@/libs/local-storage";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function Login() {
   const login = useNDKSessionLogin();
 
   const handleLogin = async (keys: KeysV2) => {
+    console.log("handleLogin", keys);
     const signer = new NDKPrivateKeySigner(keys.nsec);
 
     await saveSigner(keys);
@@ -79,6 +81,18 @@ export default function Login() {
         return <LoginForm setMode={setMode} />;
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      const keys = await getKeys();
+      if (keys) {
+        const signer = new NDKPrivateKeySigner(keys.nsec);
+        await login(signer);
+        // Redirect to the app after successful login
+        navigate(ROUTES.CHAT);
+      }
+    })();
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-150px)] p-4">

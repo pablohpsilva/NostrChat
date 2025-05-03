@@ -177,37 +177,34 @@ export function useEncryptedDirectMessage({
   };
 
   // Memoized function to decrypt a single message
-  const decryptSingleMessage = useCallback(
-    async (message: NDKEvent): Promise<void> => {
-      // Skip if already decrypted
-      if (decryptedIdsRef.current.has(message.id)) return;
+  const decryptSingleMessage = async (message: NDKEvent): Promise<void> => {
+    // Skip if already decrypted
+    if (decryptedIdsRef.current.has(message.id)) return;
 
-      try {
-        const content = await decryptMessage(message);
+    try {
+      const content = await decryptMessage(message);
 
-        // Update state with new decrypted message without causing re-render of all
-        setDecryptedMessages((prev) => {
-          if (content) {
-            return { ...prev, [message.id]: content };
-          } else {
-            return { ...prev, [message.id]: "Unable to decrypt message" };
-          }
-        });
+      // Update state with new decrypted message without causing re-render of all
+      setDecryptedMessages((prev) => {
+        if (content) {
+          return { ...prev, [message.id]: content };
+        } else {
+          return { ...prev, [message.id]: "Unable to decrypt message" };
+        }
+      });
 
-        // Mark as decrypted
-        decryptedIdsRef.current.add(message.id);
-      } catch (error) {
-        console.error("Error decrypting message:", error);
-        setDecryptedMessages((prev) => ({
-          ...prev,
-          [message.id]: "Error decrypting message",
-        }));
-        // Still mark as attempted so we don't retry indefinitely
-        decryptedIdsRef.current.add(message.id);
-      }
-    },
-    [decryptMessage]
-  );
+      // Mark as decrypted
+      decryptedIdsRef.current.add(message.id);
+    } catch (error) {
+      console.error("Error decrypting message:", error);
+      setDecryptedMessages((prev) => ({
+        ...prev,
+        [message.id]: "Error decrypting message",
+      }));
+      // Still mark as attempted so we don't retry indefinitely
+      decryptedIdsRef.current.add(message.id);
+    }
+  };
 
   return {
     directMessages,

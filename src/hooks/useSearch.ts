@@ -26,6 +26,7 @@ export function useSearch() {
     error: directMessagesError,
     loadDirectMessages,
     decryptedIdsRef,
+    decryptedMessages,
     decryptSingleMessage,
   } = useEncryptedDirectMessage({ masterPrivateKeyHex });
   const messages = Object.values(directMessages).flat();
@@ -79,20 +80,25 @@ export function useSearch() {
           const messages = directMessages[key];
 
           // Decrypt all messages in this conversation
-          const decryptedEvents = await Promise.all(
-            messages.map(async (message) => {
-              const result = await decryptSingleMessage(message);
-              return result;
-            })
+          await Promise.all(
+            messages.map(async (message) => await decryptSingleMessage(message))
           );
-
           // Filter messages that match the search query
-          const matchingEvents = decryptedEvents.filter((event) => {
-            return (
-              event.content &&
-              event.content.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-          });
+          const matchingEvents = messages
+            .reduce(
+              (acc, curr) =>
+                acc.concat({ ...curr, content: decryptedMessages[curr.id] }),
+              [] as NDKEvent[]
+            )
+            .filter((event) => {
+              const decrypted = decryptedMessages[event.id];
+              return (
+                // event.content &&
+                // event.content.toLowerCase().includes(searchQuery.toLowerCase())
+                decrypted &&
+                event.content.toLowerCase().includes(searchQuery.toLowerCase())
+              );
+            });
 
           allResults.push(...matchingEvents);
         }

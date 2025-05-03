@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { NDKUser, NDKFilter, NDKKind } from "@nostr-dev-kit/ndk";
+import {
+  NDKUser,
+  NDKFilter,
+  NDKKind,
+  NDKUserProfile,
+} from "@nostr-dev-kit/ndk";
 import { nip19 } from "nostr-tools";
 
 import { getNDK } from "@/components/NDKHeadless";
@@ -11,7 +16,7 @@ interface SearchUserOptions {
 interface SearchUserResult {
   loading: boolean;
   error: Error | null;
-  users: NDKUser[];
+  users: NDKUserProfile[];
   search: (query: string, options?: SearchUserOptions) => Promise<void>;
 }
 
@@ -21,7 +26,7 @@ interface SearchUserResult {
  * @returns Functions and state for searching users
  */
 export function useSearchUser(): SearchUserResult {
-  const [users, setUsers] = useState<NDKUser[]>([]);
+  const [users, setUsers] = useState<NDKUserProfile[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const ndk = getNDK();
@@ -77,44 +82,26 @@ export function useSearchUser(): SearchUserResult {
       }
 
       const events = await ndk.fetchEvents(filters);
+      const profiles = await Promise.all(
+        Array.from(events).map(async (event) => {
+          const user = ndk.getUser({ pubkey: event.pubkey });
+          const profile = await user.fetchProfile();
+          return profile;
+        })
+      );
 
-      const foundUsers: NDKUser[] = [];
+      const searchLower = query.toLowerCase();
+      const foundUsers = profiles.filter(Boolean).filter((profile) => {
+        const nameLower = (profile?.name || "").toLowerCase();
+        const displayNameLower = (profile?.displayName || "").toLowerCase();
+        const aboutLower = (profile?.about || "").toLowerCase();
 
-      for (const event of events) {
-        try {
-          const user = new NDKUser({ pubkey: event.pubkey });
-          user.ndk = ndk;
-
-          // Try to parse the content which contains user metadata
-          const content = JSON.parse(event.content);
-
-          // If searching by name/display name and not by npub
-          if (!pubkey) {
-            const searchLower = query.toLowerCase();
-            const nameLower = (content.name || "").toLowerCase();
-            const displayNameLower = (content.display_name || "").toLowerCase();
-            const aboutLower = (content.about || "").toLowerCase();
-
-            // Only add user if their name/display_name/about matches the search query
-            if (
-              nameLower.includes(searchLower) ||
-              displayNameLower.includes(searchLower) ||
-              aboutLower.includes(searchLower)
-            ) {
-              // Cache profile data so we have immediate access to it
-              user.profile = content;
-              foundUsers.push(user);
-            }
-          } else {
-            // For npub search, we've already filtered by author, just add the user
-            user.profile = content;
-            foundUsers.push(user);
-          }
-        } catch (e) {
-          // Skip events with invalid content
-          console.error("Error processing user search result:", e);
-        }
-      }
+        return (
+          nameLower.includes(searchLower) ||
+          displayNameLower.includes(searchLower) ||
+          aboutLower.includes(searchLower)
+        );
+      }) as NDKUserProfile[];
 
       setUsers(foundUsers);
     } catch (err) {

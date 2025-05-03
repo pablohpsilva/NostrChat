@@ -3,6 +3,72 @@ import { useState } from "react";
 import { useSearch } from "@/hooks/useSearch";
 import { NDKUserProfile } from "@nostr-dev-kit/ndk";
 
+/**
+ * Format and highlight search terms in content
+ */
+const formatHighlightedContent = (
+  content: string,
+  searchQuery: string,
+  threshold: number = 45
+) => {
+  if (!content) {
+    return <span></span>;
+  }
+
+  const searchIndex = content.toLowerCase().indexOf(searchQuery.toLowerCase());
+
+  // If content is too long, create a trimmed version that includes the search term
+  let formattedContent = content;
+  if (content.length > threshold) {
+    // If search term is found, center the trimmed content around it
+    if (searchIndex >= 0) {
+      const startPos = Math.max(0, searchIndex - 15);
+      const endPos = Math.min(
+        content.length,
+        searchIndex + searchQuery.length + 15
+      );
+      formattedContent =
+        (startPos > 0 ? "..." : "") +
+        content.substring(startPos, endPos) +
+        (endPos < content.length ? "..." : "");
+    } else {
+      // If search term not found, just take first 42 chars
+      formattedContent = content.substring(0, 42) + "...";
+    }
+  }
+
+  // Highlight the search term
+  return (
+    <span>
+      {formattedContent
+        .split(new RegExp(`(${searchQuery})`, "gi"))
+        .map((part, i) =>
+          part.toLowerCase() === searchQuery.toLowerCase() ? (
+            <strong key={i} className="text-black">
+              {part}
+            </strong>
+          ) : (
+            part
+          )
+        )}
+    </span>
+  );
+};
+
+/**
+ * Format a user identifier (npub or pubkey) for display
+ */
+const formatUserIdentifier = (user: NDKUserProfile): string => {
+  if (typeof user.npub === "string") {
+    return `${user.npub.substring(0, 8)}...${user.npub.substring(
+      user.npub.length - 4
+    )}`;
+  } else if (typeof user.pubkey === "string") {
+    return `npub...${user.pubkey.substring(user.pubkey.length - 6)}`;
+  }
+  return "Unknown ID";
+};
+
 export default function Search({
   userProfiles,
 }: {
@@ -10,7 +76,7 @@ export default function Search({
 }) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { search, decryptedDirectMessages } = useSearch();
+  const { search, decryptedDirectMessages, users } = useSearch();
 
   const handleInputClick = () => {
     setIsOverlayOpen(true);
@@ -85,92 +151,98 @@ export default function Search({
             />
           </div>
           <div className="flex-1 p-4 overflow-y-auto">
-            {/* {searchQuery ? (
-              <div className="text-gray-600">
-                Search results will appear here...
-              </div>
-            ) : (
-              <div className="text-gray-400 text-center mt-10">
-                Type to search on nostr
-              </div>
-            )} */}
-            {searchQuery ? (
+            {searchQuery && (
               <div className="text-xs text-black/40 w-full text-center">
-                Total results: {decryptedDirectMessages.length}
-              </div>
-            ) : (
-              <div className="text-gray-400 text-center mt-10">
-                Type to search on nostr
+                Total results: {decryptedDirectMessages.length + users.length}
               </div>
             )}
-            {decryptedDirectMessages && decryptedDirectMessages.length > 0 ? (
-              <div className="space-y-4 mt-4">
-                {decryptedDirectMessages.map((event) => (
-                  <div
-                    key={event.id}
-                    className="border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="font-medium text-gray-800 mb-1">
-                      {userProfiles[event.pubkey]?.displayName ||
-                        "Unknown User"}
+
+            {decryptedDirectMessages && decryptedDirectMessages.length > 0 && (
+              <>
+                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                  Messages
+                </h3>
+                <div className="space-y-4 mt-4">
+                  {decryptedDirectMessages.map((event) => (
+                    <div
+                      key={event.id}
+                      className="border border-gray-200 rounded-lg p-4"
+                    >
+                      <div className="font-medium text-gray-800 mb-1">
+                        {userProfiles[event.pubkey]?.displayName ||
+                          "Unknown User"}
+                      </div>
+                      <div className="text-black/40">
+                        {event.content
+                          ? formatHighlightedContent(event.content, searchQuery)
+                          : ""}
+                      </div>
                     </div>
-                    <div className="text-black/40">
-                      {event.content ? (
-                        <span>
-                          {(() => {
-                            // Trim content to max 45 chars
-                            let content = event.content;
-                            const searchRegex = new RegExp(searchQuery, "i");
-                            const searchIndex = content
-                              .toLowerCase()
-                              .indexOf(searchQuery.toLowerCase());
+                  ))}
+                </div>
+              </>
+            )}
 
-                            // If content is too long, create a trimmed version that includes the search term
-                            if (content.length > 45) {
-                              // If search term is found, center the trimmed content around it
-                              if (searchIndex >= 0) {
-                                const startPos = Math.max(0, searchIndex - 15);
-                                const endPos = Math.min(
-                                  content.length,
-                                  searchIndex + searchQuery.length + 15
-                                );
-                                content =
-                                  (startPos > 0 ? "..." : "") +
-                                  content.substring(startPos, endPos) +
-                                  (endPos < content.length ? "..." : "");
-                              } else {
-                                // If search term not found, just take first 42 chars
-                                content = content.substring(0, 42) + "...";
-                              }
-                            }
-
-                            // Highlight the search term
-                            return content
-                              .split(new RegExp(`(${searchQuery})`, "gi"))
-                              .map((part, i) =>
-                                part.toLowerCase() ===
-                                searchQuery.toLowerCase() ? (
-                                  <strong key={i} className="text-black">
-                                    {part}
-                                  </strong>
-                                ) : (
-                                  part
+            {users.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                  Users
+                </h3>
+                <div className="space-y-3">
+                  {users.map((user) => (
+                    <div
+                      key={user.pubkey}
+                      className="flex items-start p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex-shrink-0">
+                        <img
+                          src={
+                            user.picture ||
+                            "https://placehold.co/40x40?text=NostrChat"
+                          }
+                          alt={user.displayName || user.name || "User"}
+                          className="w-10 h-10 rounded-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "https://placehold.co/40x40?text=NostrChat";
+                          }}
+                        />
+                      </div>
+                      <div className="ml-3 flex-1 overflow-hidden">
+                        <div className="flex flex-col">
+                          {user.displayName || user.name || "Anonymous"
+                            ? formatHighlightedContent(
+                                user.displayName || user.name || "Anonymous",
+                                searchQuery
+                              )
+                            : ""}
+                          <span className="text-xs text-gray-500">
+                            {formatUserIdentifier(user)}
+                          </span>
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {user.about
+                              ? formatHighlightedContent(
+                                  user.about,
+                                  searchQuery
                                 )
-                              );
-                          })()}
-                        </span>
-                      ) : (
-                        ""
-                      )}
+                              : ""}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            ) : searchQuery ? (
+            )}
+
+            {decryptedDirectMessages?.length === 0 && users.length === 0 && (
               <div className="text-gray-500 text-center mt-8">
-                No results found for "{searchQuery}"
+                {/* No results found for "{searchQuery}" */}
+                {searchQuery
+                  ? `No results found for "${searchQuery}"`
+                  : "Type to search on nostr"}
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       )}
