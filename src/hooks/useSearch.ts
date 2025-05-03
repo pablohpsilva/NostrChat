@@ -35,6 +35,7 @@ export function useSearch() {
     users,
     loading: userLoading,
     error: userError,
+    clear: clearUser,
   } = useSearchUser();
 
   /**
@@ -45,6 +46,12 @@ export function useSearch() {
    * @returns The search results
    */
   const search = async (query: string): Promise<void> => {
+    if (!query.length) {
+      setSearchQuery("");
+      setDecryptedDirectMessages([]);
+      clearUser();
+      return;
+    }
     setSearchQuery(query);
     searchUser(query);
   };

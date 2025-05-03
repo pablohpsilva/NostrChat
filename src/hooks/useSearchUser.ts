@@ -18,6 +18,7 @@ interface SearchUserResult {
   error: Error | null;
   users: NDKUserProfile[];
   search: (query: string, options?: SearchUserOptions) => Promise<void>;
+  clear: () => void;
 }
 
 /**
@@ -111,10 +112,15 @@ export function useSearchUser(): SearchUserResult {
     }
   };
 
+  const clear = () => {
+    setUsers([]);
+  };
+
   return {
     users,
     loading,
     error,
+    clear,
     search,
   };
 }
