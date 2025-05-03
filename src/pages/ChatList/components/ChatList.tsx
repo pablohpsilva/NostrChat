@@ -43,7 +43,7 @@ const ChatList = ({
             </svg>
           </button>
 
-          <Search />
+          <Search userProfiles={userProfiles} />
         </div>
       </div>
 

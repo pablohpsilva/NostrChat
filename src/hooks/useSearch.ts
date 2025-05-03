@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NDKEvent } from "@nostr-dev-kit/ndk";
 import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
+
 import { getKeys } from "@/libs/local-storage";
 import { useSearchDirectMessages } from "./useSearchDirectMessages";
 
@@ -15,7 +16,7 @@ export function useSearch() {
     null
   );
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [results, setResults] = useState<Record<string, NDKEvent[]>>({});
+  const [results, setResults] = useState<NDKEvent[]>([]);
   const {
     directMessages,
     loading,
@@ -59,15 +60,39 @@ export function useSearch() {
   }, [messages, decryptSingleMessage]);
 
   useEffect(() => {
-    if (searchQuery) {
-      console.log("result directMessages", directMessages);
-      const results = Object.keys(directMessages).filter((key) => {
-        return directMessages[key].some((event) => {
-          return event.content.includes(searchQuery);
-        });
-      });
-      console.log("results", results);
-      setResults(results);
+    if (searchQuery && currentUser?.pubkey) {
+      // Process all direct messages across all conversations
+      const processAllMessages = async () => {
+        const allResults: NDKEvent[] = [];
+
+        for (const key of Object.keys(directMessages)) {
+          const messages = directMessages[key];
+
+          // Decrypt all messages in this conversation
+          const decryptedEvents = await Promise.all(
+            messages.map(async (message) => {
+              const result = await decryptSingleMessage(message);
+              return result;
+            })
+          );
+
+          // Filter messages that match the search query
+          const matchingEvents = decryptedEvents.filter((event) => {
+            return (
+              event.content &&
+              event.content.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+          });
+
+          allResults.push(...matchingEvents);
+        }
+
+        // Update results state after all processing is complete
+        setResults(allResults);
+      };
+
+      // Execute the async function
+      processAllMessages();
     }
   }, [searchQuery, directMessages]);
 

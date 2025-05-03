@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { NDKEvent, NDKUserProfile } from "@nostr-dev-kit/ndk";
 import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
+import { useNavigate } from "react-router-dom";
 
 import { useDirectMessages } from "@/hooks/useDirectMessages";
 import { getNDK } from "@/components/NDKHeadless";
@@ -11,10 +12,12 @@ import {
   MessageInput,
   EmptyChat,
 } from "./components";
+import { ROUTES } from "@/consts/routes";
+import { fillRoute } from "@/consts/routes";
 
 const ndk = getNDK();
 
-function ChatPage() {
+function PrivateChatPage() {
   const {
     directMessages,
     loading,
@@ -31,6 +34,9 @@ function ChatPage() {
   const [userProfiles, setUserProfiles] = useState<
     Record<string, NDKUserProfile>
   >({});
+  const navigate = useNavigate();
+
+  console.log("directMessages", directMessages);
 
   // Get the list of chat partners from directMessages
   const chatPartners = Object.keys(directMessages);
@@ -48,6 +54,11 @@ function ChatPage() {
   const handleChatClick = (pubkey: string) => {
     setSelectedChat(pubkey);
     setShowChatList(false);
+    console.log(
+      "fillRoute(ROUTES.CHAT_ID, { id: pubkey }))",
+      fillRoute(ROUTES.CHAT_ID, { id: pubkey })
+    );
+    navigate(fillRoute(ROUTES.CHAT_ID, { id: pubkey }));
   };
 
   // Load messages when a chat is selected
@@ -137,4 +148,4 @@ function ChatPage() {
   );
 }
 
-export default ChatPage;
+export default PrivateChatPage;

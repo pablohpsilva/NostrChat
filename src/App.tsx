@@ -2,7 +2,8 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 import Layout from "./pages/Home/Layout";
 import Home from "./pages/Home";
-import ChatPage from "./pages/Chat";
+import ChatListPage from "./pages/ChatList";
+import PrivateChatPage from "./pages/PrivateChat";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import NDKHeadless from "./components/NDKHeadless";
@@ -33,9 +34,15 @@ const router = createBrowserRouter([
         path: "chat",
         element: (
           <GuardedRoute>
-            <ChatPage />
+            <ChatListPage />
           </GuardedRoute>
         ),
+        children: [
+          {
+            path: ":id",
+            element: <PrivateChatPage />,
+          },
+        ],
       },
       {
         path: "login",
