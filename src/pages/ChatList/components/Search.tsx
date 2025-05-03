@@ -2,6 +2,13 @@ import { useState } from "react";
 
 import { useSearch } from "@/hooks/useSearch";
 import { NDKUserProfile } from "@nostr-dev-kit/ndk";
+import { fillRoute, ROUTES } from "@/consts/routes";
+import { Link } from "react-router-dom";
+import SearchStartChat from "./SearchStartChat";
+
+const formatPubkey = (pubkey: string) => {
+  return `${pubkey.substring(0, 8)}...${pubkey.substring(pubkey.length - 8)}`;
+};
 
 /**
  * Format and highlight search terms in content
@@ -151,6 +158,12 @@ export default function Search({
             />
           </div>
           <div className="flex-1 p-4 overflow-y-auto">
+            {searchQuery &&
+              searchQuery.startsWith("npub") &&
+              searchQuery.length === 63 && (
+                <SearchStartChat npub={searchQuery} />
+              )}
+
             {searchQuery && (
               <div className="text-xs text-black/40 w-full text-center">
                 Total results: {decryptedDirectMessages.length + users.length}
@@ -236,7 +249,7 @@ export default function Search({
             )}
 
             {decryptedDirectMessages?.length === 0 && users.length === 0 && (
-              <div className="text-gray-500 text-center mt-8">
+              <div className="text-gray-500 text-center mt-8 break-words">
                 {/* No results found for "{searchQuery}" */}
                 {searchQuery
                   ? `No results found for "${searchQuery}"`

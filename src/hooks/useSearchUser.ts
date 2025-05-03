@@ -21,6 +21,7 @@ interface SearchUserResult {
   clear: () => void;
 }
 
+const ndk = getNDK();
 /**
  * Hook to search for users on Nostr by displayName, npub, or other public identifiers
  *
@@ -30,7 +31,6 @@ export function useSearchUser(): SearchUserResult {
   const [users, setUsers] = useState<NDKUserProfile[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
-  const ndk = getNDK();
 
   /**
    * Search for users on Nostr by displayName, npub, or other public identifiers
