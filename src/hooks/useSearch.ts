@@ -93,8 +93,12 @@ export function useSearch() {
           // Filter messages that match the search query
           const matchingEvents = messages
             .reduce(
-              (acc, curr) =>
-                acc.concat({ ...curr, content: decryptedMessages[curr.id] }),
+              (acc, curr: NDKEvent) =>
+                // @ts-expect-error
+                acc.concat({
+                  ...curr,
+                  content: decryptedMessages[curr.id] as NDKEvent["content"],
+                }),
               [] as NDKEvent[]
             )
             .filter((event) => {

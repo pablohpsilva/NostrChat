@@ -112,7 +112,7 @@ function PrivateChatPage() {
       {showChatList && (
         <ChatList
           loading={loading}
-          error={error}
+          error={error?.message ?? "ERROR"}
           chatPartners={chatPartners}
           directMessages={directMessages}
           userProfiles={userProfiles}

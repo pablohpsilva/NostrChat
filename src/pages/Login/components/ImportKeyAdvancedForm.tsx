@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { generateSeedWords, privateKeyFromSeedWords } from "nostr-tools/nip06";
+import { privateKeyFromSeedWords } from "nostr-tools/nip06";
 import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
 
 import { KeysV2 } from "@/types";

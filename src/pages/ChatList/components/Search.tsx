@@ -2,13 +2,12 @@ import { useState } from "react";
 
 import { useSearch } from "@/hooks/useSearch";
 import { NDKUserProfile } from "@nostr-dev-kit/ndk";
-import { fillRoute, ROUTES } from "@/consts/routes";
-import { Link } from "react-router-dom";
+
 import SearchStartChat from "./SearchStartChat";
 
-const formatPubkey = (pubkey: string) => {
-  return `${pubkey.substring(0, 8)}...${pubkey.substring(pubkey.length - 8)}`;
-};
+// const formatPubkey = (pubkey: string) => {
+//   return `${pubkey.substring(0, 8)}...${pubkey.substring(pubkey.length - 8)}`;
+// };
 
 /**
  * Format and highlight search terms in content

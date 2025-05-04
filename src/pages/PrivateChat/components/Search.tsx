@@ -120,7 +120,7 @@ export default function Search({
                           {(() => {
                             // Trim content to max 45 chars
                             let content = event.content;
-                            const searchRegex = new RegExp(searchQuery, "i");
+                            // const searchRegex = new RegExp(searchQuery, "i");
                             const searchIndex = content
                               .toLowerCase()
                               .indexOf(searchQuery.toLowerCase());

@@ -1,6 +1,6 @@
 import { SecureStoragePlugin } from "capacitor-secure-storage-plugin";
 import { DEFAULT_RELAYS, PLATFORM } from "../../consts";
-import { Keys, KeysV2, RelayDict } from "../../types";
+import { KeysV2, RelayDict } from "../../types";
 import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
 
 const isCapacitor = PLATFORM === "ios" || PLATFORM === "android";

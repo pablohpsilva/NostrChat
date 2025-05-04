@@ -6,7 +6,7 @@ import {
 } from "@nostr-dev-kit/ndk";
 import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 import { nip04 } from "nostr-tools";
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { getNDK } from "../components/NDKHeadless";
 

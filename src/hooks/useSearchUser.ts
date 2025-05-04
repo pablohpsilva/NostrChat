@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  NDKUser,
-  NDKFilter,
-  NDKKind,
-  NDKUserProfile,
-} from "@nostr-dev-kit/ndk";
+import { NDKFilter, NDKKind, NDKUserProfile } from "@nostr-dev-kit/ndk";
 import { nip19 } from "nostr-tools";
 
 import { getNDK } from "@/components/NDKHeadless";

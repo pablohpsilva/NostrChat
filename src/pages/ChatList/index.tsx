@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { NDKEvent, NDKUserProfile } from "@nostr-dev-kit/ndk";
 import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +110,7 @@ function ChatListPage() {
       {showChatList && (
         <ChatList
           loading={loading}
-          error={error}
+          error={error?.message ?? "ERROR"}
           chatPartners={chatPartners}
           directMessages={directMessages}
           userProfiles={userProfiles}

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
 
-import { KeysType } from "../types";
 import { KeysV2 } from "@/types";
 
 interface CreateAccountFormProps {
