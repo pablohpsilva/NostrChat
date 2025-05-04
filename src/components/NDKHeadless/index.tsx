@@ -8,14 +8,8 @@ import {
 } from "@nostr-dev-kit/ndk-hooks";
 import { useEffect } from "react";
 import { APP_NAME } from "../../consts";
-
-// Define explicit relays or use defaults
-const explicitRelayUrls = [
-  "wss://relay.primal.net",
-  "wss://nos.lol",
-  "wss://purplepag.es",
-  "wss://relay.damus.io",
-];
+import { DEFAULT_RELAYS } from "@/hooks/useRelays";
+import { RelayDict } from "@/types";
 
 // Setup Dexie cache adapter (Client-side only)
 let cacheAdapter: NDKCacheAdapterDexie | undefined;
@@ -28,9 +22,11 @@ const sessionStorage = new NDKSessionLocalStorage();
 
 // Singleton pattern to ensure only one NDK instance is used throughout the app
 export const getNDK = (() => {
+  const relays = DEFAULT_RELAYS;
+  const relayUrls = Object.keys(relays);
   // This closure ensures we only have one reference to the NDK instance
   // Create the singleton NDK instance
-  const ndk = new NDK({ explicitRelayUrls, cacheAdapter });
+  const ndk = new NDK({ explicitRelayUrls: relayUrls, cacheAdapter });
   let instance = ndk;
 
   // Connect to relays on initialization (client-side)
@@ -38,11 +34,21 @@ export const getNDK = (() => {
 
   // Return a function that always provides the same instance
   return () => {
-    return instance;
+    return {
+      getInstance: () => instance,
+      getRelayUrls: () => instance.explicitRelayUrls,
+      setRelays: (newRelays: RelayDict) => {
+        const explicitRelayUrls = Object.keys(newRelays);
+        instance = new NDK({ explicitRelayUrls, cacheAdapter });
+        if (typeof window !== "undefined") {
+          instance.connect();
+        }
+      },
+    };
   };
 })();
 
-const ndk = getNDK();
+const ndk = getNDK().getInstance();
 
 // Helper to get the current user from the NDK instance
 export const getCurrentUser = async () => {

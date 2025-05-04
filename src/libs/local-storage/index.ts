@@ -5,6 +5,7 @@ import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
 
 const isCapacitor = PLATFORM === "ios" || PLATFORM === "android";
 const LOCAL_STORAGE_KEYS = "keys";
+const LOCAL_STORAGE_RELAYS = "relays";
 
 const getItem = async (key: string): Promise<any | null> => {
   let valueRaw: null | string;
@@ -50,13 +51,19 @@ const removeItem = async (key: string): Promise<void> => {
   }
 };
 
+/**
+ *
+ * Relays methods
+ *
+ */
 export const getRelays = (): Promise<RelayDict> =>
-  getItem("relays").then((r) => r || DEFAULT_RELAYS);
+  getItem(LOCAL_STORAGE_RELAYS).then((r) => r || DEFAULT_RELAYS);
 export const getRelaysNullable = (): Promise<RelayDict | null> =>
-  getItem("relays");
+  getItem(LOCAL_STORAGE_RELAYS);
 export const storeRelays = async (relays: RelayDict) =>
-  setItem("relays", relays);
-export const removeRelays = async (): Promise<void> => removeItem("relays");
+  setItem(LOCAL_STORAGE_RELAYS, relays);
+export const removeRelays = async (): Promise<void> =>
+  removeItem(LOCAL_STORAGE_RELAYS);
 
 /**
  *

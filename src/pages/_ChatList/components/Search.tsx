@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-// import { useSearch } from "@/hooks/useSearch";
+import { useSearch } from "@/hooks/useSearch";
 import { NDKUserProfile } from "@nostr-dev-kit/ndk";
 
 import SearchStartChat from "./SearchStartChat";
@@ -75,10 +75,14 @@ const formatUserIdentifier = (user: NDKUserProfile): string => {
   return "Unknown ID";
 };
 
-export default function Search() {
+export default function Search({
+  userProfiles,
+}: {
+  userProfiles: Record<string, NDKUserProfile>;
+}) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  // const { search, decryptedDirectMessages, users } = useSearch();
+  const { search, decryptedDirectMessages, users } = useSearch();
 
   const handleInputClick = () => {
     setIsOverlayOpen(true);
@@ -93,7 +97,7 @@ export default function Search() {
     setSearchQuery(query);
     // // TODO: Implement nostr search logic here
     // console.log("Searching on nostr for:", query);
-    // await search(query);
+    await search(query);
   };
 
   return (
@@ -159,13 +163,13 @@ export default function Search() {
                 <SearchStartChat npub={searchQuery} />
               )}
 
-            {/* {searchQuery && (
+            {searchQuery && (
               <div className="text-xs text-black/40 w-full text-center">
                 Total results: {decryptedDirectMessages.length + users.length}
               </div>
-            )} */}
+            )}
 
-            {/* {decryptedDirectMessages && decryptedDirectMessages.length > 0 && (
+            {decryptedDirectMessages && decryptedDirectMessages.length > 0 && (
               <>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">
                   Messages
@@ -189,9 +193,9 @@ export default function Search() {
                   ))}
                 </div>
               </>
-            )} */}
+            )}
 
-            {/* {users.length > 0 && (
+            {users.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-sm font-medium text-gray-500 mb-2">
                   Users
@@ -241,15 +245,16 @@ export default function Search() {
                   ))}
                 </div>
               </div>
-            )} */}
+            )}
 
-            {/* {decryptedDirectMessages?.length === 0 && users.length === 0 && (
+            {decryptedDirectMessages?.length === 0 && users.length === 0 && (
               <div className="text-gray-500 text-center mt-8 break-words">
+                {/* No results found for "{searchQuery}" */}
                 {searchQuery
                   ? `No results found for "${searchQuery}"`
                   : "Type to search on nostr"}
               </div>
-            )} */}
+            )}
           </div>
         </div>
       )}

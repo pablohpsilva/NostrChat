@@ -1,151 +1,62 @@
-import { useState, useEffect } from "react";
-import { NDKEvent, NDKUserProfile } from "@nostr-dev-kit/ndk";
-import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 import { useNavigate } from "react-router-dom";
-
-import { useDirectMessages } from "@/hooks/useDirectMessages";
-import { getNDK } from "@/components/NDKHeadless";
-import {
-  ChatList,
-  ChatHeader,
-  MessageList,
-  MessageInput,
-  EmptyChat,
-} from "./components";
 import { ROUTES } from "@/consts/routes";
-import { fillRoute } from "@/consts/routes";
+import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 
-const ndk = getNDK();
+import { ChatHeader, MessageInput, MessageList } from "./components";
+import usePrivateDirectMessage from "@/hooks/usePrivateDirectMessage";
+import { useEffect } from "react";
+import { getKeys } from "@/libs/local-storage";
 
-function PrivateChatPage() {
-  const {
-    directMessages,
-    loading,
-    error,
-    decryptedIdsRef,
-    sendDirectMessage,
-    decryptedMessages,
-    decryptSingleMessage,
-  } = useDirectMessages();
-  const [selectedChat, setSelectedChat] = useState<string | null>(null);
-  const [messages, setMessages] = useState<NDKEvent[]>([]);
-  const [showChatList, setShowChatList] = useState(true);
+export default function PrivateChatPage() {
   const currentUser = useNDKCurrentUser();
-  const [userProfiles, setUserProfiles] = useState<
-    Record<string, NDKUserProfile>
-  >({});
   const navigate = useNavigate();
-
-  console.log("directMessages", directMessages);
-
-  // Get the list of chat partners from directMessages
-  const chatPartners = Object.keys(directMessages);
+  const {
+    sendDirectMessage,
+    getUserChats,
+    getConversationMessagesWebhook,
+    messagesByUser,
+  } = usePrivateDirectMessage();
 
   const handleSendMessage = async (newMessage: string) => {
-    if (!selectedChat || !newMessage.trim() || !currentUser) return;
-
-    await sendDirectMessage(selectedChat, newMessage);
+    // if (!selectedChat || !newMessage.trim() || !currentUser) return;
+    // await sendDirectMessage(selectedChat, newMessage);
   };
 
   const handleBackToList = () => {
-    setShowChatList(true);
+    navigate(ROUTES.CHAT);
   };
 
-  const handleChatClick = (pubkey: string) => {
-    setSelectedChat(pubkey);
-    setShowChatList(false);
-    console.log(
-      "fillRoute(ROUTES.CHAT_ID, { id: pubkey }))",
-      fillRoute(ROUTES.CHAT_ID, { id: pubkey })
-    );
-    navigate(fillRoute(ROUTES.CHAT_ID, { id: pubkey }));
-  };
+  // useEffect(() => {
+  //   if (currentUser) {
+  //     getConversationMessagesWebhook(currentUser.pubkey);
+  //   }
+  // }, [currentUser]);
 
-  // Load messages when a chat is selected
   useEffect(() => {
-    if (selectedChat) {
-      // Get conversation directly from directMessages instead of using function
-      const conversation = directMessages[selectedChat] || [];
-      setMessages(conversation);
-      // Hide chat list when a chat is selected (mobile view)
-      setShowChatList(false);
-    }
-  }, [selectedChat, directMessages]);
-
-  // Decrypt messages when they change
-  useEffect(() => {
-    // Only decrypt messages we haven't decrypted yet
-    const messagesToDecrypt = messages.filter(
-      (message) => !decryptedIdsRef.current.has(message.id)
-    );
-
-    // Process each message
-    messagesToDecrypt.forEach((message) => {
-      decryptSingleMessage(message);
-    });
-  }, [messages, decryptSingleMessage]);
-
-  // Fetch user profiles for chat partners
-  useEffect(() => {
-    if (chatPartners.length > 0) {
-      Promise.all(
-        chatPartners.map(async (pubkey) => {
-          const user = ndk.getUser({ pubkey });
-          const profile = await user.fetchProfile();
-          return { pubkey, profile };
-        })
-      ).then((results) => {
-        const profilesMap = results.reduce((acc, { pubkey, profile }) => {
-          if (profile) {
-            return { ...acc, [pubkey]: profile };
-          }
-          return acc;
-        }, {} as Record<string, NDKUserProfile>);
-        setUserProfiles(profilesMap);
-      });
-    }
-  }, [directMessages]);
+    (async () => {
+      const { nsec } = await getKeys();
+      console.log(await getUserChats(nsec!));
+    })();
+  }, []);
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Chat list */}
-      {showChatList && (
-        <ChatList
-          loading={loading}
-          error={error?.message ?? "ERROR"}
-          chatPartners={chatPartners}
-          directMessages={directMessages}
+      <div className="flex flex-col h-full">
+        {/* <ChatHeader
+          selectedChat={selectedChat}
           userProfiles={userProfiles}
-          onChatClick={handleChatClick}
+          messages={messages}
+          onBackClick={handleBackToList}
         />
-      )}
 
-      {/* Chat messages area */}
-      {!showChatList && selectedChat && (
-        <div className="flex flex-col h-full">
-          <ChatHeader
-            selectedChat={selectedChat}
-            userProfiles={userProfiles}
-            messages={messages}
-            onBackClick={handleBackToList}
-          />
+        <MessageList
+          messages={messages}
+          decryptedMessages={decryptedMessages}
+          currentUserPubkey={currentUser?.pubkey}
+        /> */}
 
-          <MessageList
-            messages={messages}
-            decryptedMessages={decryptedMessages}
-            currentUserPubkey={currentUser?.pubkey}
-          />
-
-          <MessageInput onSendMessage={handleSendMessage} />
-        </div>
-      )}
-
-      {/* Default state - no chat selected */}
-      {!showChatList && !selectedChat && (
-        <EmptyChat onBackClick={handleBackToList} />
-      )}
+        <MessageInput onSendMessage={handleSendMessage} />
+      </div>
     </div>
   );
 }
-
-export default PrivateChatPage;

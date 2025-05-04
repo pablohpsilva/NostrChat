@@ -1,8 +1,10 @@
 import { getNDK } from "@/components/NDKHeadless";
 import { fillRoute, ROUTES } from "@/consts/routes";
-import { NDKKind, NDKUserProfile } from "@nostr-dev-kit/ndk";
+import { NDKUserProfile } from "@nostr-dev-kit/ndk";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+
+const ndk = getNDK().getInstance();
 
 const formatPubkey = (pubkey: string) => {
   return `${pubkey.substring(0, 8)}...${pubkey.substring(pubkey.length - 8)}`;
@@ -16,9 +18,8 @@ export default function SearchStartChat({ npub }: { npub: string }) {
   const fetchUserProfile = async () => {
     try {
       setIsLoading(true);
-      const user = getNDK().getInstance().getUser({ npub });
+      const user = ndk.getUser({ npub });
       const userProfile = await user.fetchProfile();
-
       if (userProfile) {
         setUserProfiles(userProfile);
       }
@@ -66,12 +67,7 @@ export default function SearchStartChat({ npub }: { npub: string }) {
           </div>
         </div>
         <div>
-          <Link
-            to={fillRoute(ROUTES.CHAT_ID, {
-              nip: `NIP${NDKKind.PrivateDirectMessage}`,
-              pubkey: npub,
-            })}
-          >
+          <Link to={fillRoute(ROUTES.CHAT_ID, { id: npub })}>
             <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
               Chat
             </button>

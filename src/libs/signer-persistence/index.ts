@@ -10,7 +10,7 @@ export const saveSigner = async (value: KeysV2) => {
 
 export const getSigner = async () => {
   const values = await getKeys();
-  const ndk = getNDK();
+  const ndk = getNDK().getInstance();
 
   if (!values) {
     return null;

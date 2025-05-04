@@ -10,6 +10,7 @@ import NDKHeadless from "./components/NDKHeadless";
 
 import { Outlet } from "react-router-dom";
 import GuardedRoute from "./components/GuardedRoute";
+import PrivateEncryptedChatRoutePage from "./pages/PrivateEncryptedChatRoutePage";
 
 const router = createBrowserRouter([
   {
@@ -37,12 +38,14 @@ const router = createBrowserRouter([
             <ChatListPage />
           </GuardedRoute>
         ),
-        children: [
-          {
-            path: ":id",
-            element: <PrivateChatPage />,
-          },
-        ],
+      },
+      {
+        path: "chat/:nip/:pubkey",
+        element: (
+          <GuardedRoute>
+            <PrivateEncryptedChatRoutePage />
+          </GuardedRoute>
+        ),
       },
       {
         path: "login",

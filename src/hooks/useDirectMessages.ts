@@ -6,7 +6,7 @@ import { nip04 } from "nostr-tools";
 import { getNDK } from "@/components/NDKHeadless";
 import { getKeys } from "@/libs/local-storage";
 import { useEncryptedDirectMessage } from "./useEncryptedDirectMessage";
-const ndk = getNDK();
+const ndk = getNDK().getInstance();
 
 /**
  * Hook to fetch and manage direct messages for the current user

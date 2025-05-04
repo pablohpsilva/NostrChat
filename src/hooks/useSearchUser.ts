@@ -16,7 +16,7 @@ interface SearchUserResult {
   clear: () => void;
 }
 
-const ndk = getNDK();
+const ndk = getNDK().getInstance();
 /**
  * Hook to search for users on Nostr by displayName, npub, or other public identifiers
  *

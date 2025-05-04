@@ -19,6 +19,7 @@
     "@nostr-dev-kit/ndk-wallet": "^0.5.9",
     "@tailwindcss/vite": "^4.1.5",
     "capacitor-secure-storage-plugin": "^0.11.0",
+    "clsx": "^2.1.1",
     "crypto": "^1.0.1",
     "nostr-nsec-seedphrase": "^0.6.5",
     "nostr-tools": "^2.12.0",

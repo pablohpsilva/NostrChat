@@ -106,3 +106,13 @@ export type ReactionCombined = {
 };
 
 export type ReadMarkMap = Record<string, number>;
+
+export type Recipient = {
+  publicKey: string;
+  relayUrl?: string;
+};
+
+export type ReplyTo = {
+  eventId: string;
+  relayUrl?: string;
+};

@@ -1,7 +1,7 @@
 export const ROUTES = {
   ROOT: "/",
   CHAT: "/chat",
-  CHAT_ID: "/chat/{id}",
+  CHAT_ID: "/chat/{nip}/{pubkey}",
   LOGIN: "/login",
 };
 

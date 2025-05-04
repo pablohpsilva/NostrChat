@@ -8,9 +8,9 @@ import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 import { nip04 } from "nostr-tools";
 import { useRef, useState } from "react";
 
-import { getNDK } from "../components/NDKHeadless";
+import { getNDK } from "@/components/NDKHeadless";
 
-const ndk = getNDK();
+const ndk = getNDK().getInstance();
 
 export function useEncryptedDirectMessage({
   masterPrivateKeyHex,
@@ -31,7 +31,9 @@ export function useEncryptedDirectMessage({
    * Load all direct messages for the current user
    */
   const loadDirectMessages = async () => {
-    if (!currentUser?.pubkey) return;
+    if (!currentUser?.pubkey) {
+      return;
+    }
 
     try {
       setLoading(true);
@@ -85,6 +87,8 @@ export function useEncryptedDirectMessage({
 
       // Subscribe to outgoing messages (from the current user)
       const outgoingSub = ndk.subscribe(outgoingFilter, options);
+      // Subscribe to incoming messages (to the current user)
+      const incomingSub = ndk.subscribe(incomingFilter, options);
 
       outgoingSub.on("event", (event: NDKEvent) => {
         // console.log("Outgoing message received:", event);
@@ -95,9 +99,6 @@ export function useEncryptedDirectMessage({
           addMessageToConversation(event, recipientPubkey);
         }
       });
-
-      // Subscribe to incoming messages (to the current user)
-      const incomingSub = ndk.subscribe(incomingFilter, options);
 
       incomingSub.on("event", (event: NDKEvent) => {
         // console.log("Incoming message received:", event);

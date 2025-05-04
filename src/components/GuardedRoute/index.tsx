@@ -11,11 +11,11 @@ const GuardedRoute = ({ children }: GuardedRouteProps) => {
   const currentUser = useNDKCurrentUser();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!currentUser) {
-      navigate(ROUTES.LOGIN);
-    }
-  }, [currentUser, navigate]);
+  //   useEffect(() => {
+  //     if (!currentUser) {
+  //       navigate(ROUTES.LOGIN);
+  //     }
+  //   }, [currentUser]);
 
   if (!currentUser) {
     return (
