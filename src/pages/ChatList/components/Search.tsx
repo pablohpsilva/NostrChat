@@ -12,7 +12,7 @@ import SearchStartChat from "./SearchStartChat";
 /**
  * Format and highlight search terms in content
  */
-const formatHighlightedContent = (
+export const formatHighlightedContent = (
   content: string,
   searchQuery: string,
   threshold: number = 45
@@ -64,7 +64,7 @@ const formatHighlightedContent = (
 /**
  * Format a user identifier (npub or pubkey) for display
  */
-const formatUserIdentifier = (user: NDKUserProfile): string => {
+export const formatUserIdentifier = (user: NDKUserProfile): string => {
   if (typeof user.npub === "string") {
     return `${user.npub.substring(0, 8)}...${user.npub.substring(
       user.npub.length - 4

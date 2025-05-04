@@ -23,7 +23,13 @@ export default function PrivateEncryptedChatRoutePage() {
       const filter = pubkey.startsWith("npub") ? { npub: pubkey } : { pubkey };
       const user = getNDK().getInstance().getUser(filter);
       const _userProfile = await user.fetchProfile();
-      setUserProfile(_userProfile);
+      const { npub, pubkey: _pubkey } = user;
+
+      setUserProfile(
+        _userProfile
+          ? { ..._userProfile, ...{ npub, pubkey: _pubkey } }
+          : { npub, pubkey: _pubkey }
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -47,5 +53,5 @@ export default function PrivateEncryptedChatRoutePage() {
     return <EncryptedChat userProfile={userProfile} />;
   }
 
-  return <PrivateChat />;
+  return <PrivateChat userProfile={userProfile} />;
 }

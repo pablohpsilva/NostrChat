@@ -2,16 +2,15 @@ import {
   NDKEvent,
   NDKFilter,
   NDKKind,
-  NDKPrivateKeySigner,
   NDKSubscriptionOptions,
   NDKUserProfile,
   NostrEvent,
 } from "@nostr-dev-kit/ndk";
 import { useState } from "react";
 import { nip17 } from "nostr-tools";
+import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 
 import { Recipient, ReplyTo } from "@/types";
-import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 import { getNDK } from "@/components/NDKHeadless";
 
 export default function usePrivateDirectMessage() {
@@ -19,37 +18,37 @@ export default function usePrivateDirectMessage() {
   const [isLoading, setLoading] = useState(false);
   const [messagesByUser, setMessagesByUser] = useState<NDKEvent[]>([]);
 
-  const sendEvent = (
-    senderPrivateKey: Uint8Array,
-    recipient: Recipient,
-    message: string,
-    conversationTitle?: string,
-    replyTo?: ReplyTo
-  ): NostrEvent => {
-    return nip17.wrapEvent(
-      senderPrivateKey,
-      recipient,
-      message,
-      conversationTitle,
-      replyTo
-    );
-  };
+  // const sendEvent = (
+  //   senderPrivateKey: Uint8Array,
+  //   recipient: Recipient,
+  //   message: string,
+  //   conversationTitle?: string,
+  //   replyTo?: ReplyTo
+  // ): NostrEvent => {
+  //   return nip17.wrapEvent(
+  //     senderPrivateKey,
+  //     recipient,
+  //     message,
+  //     conversationTitle,
+  //     replyTo
+  //   );
+  // };
 
-  const sendManyEvents = (
-    senderPrivateKey: Uint8Array,
-    recipients: Recipient[],
-    message: string,
-    conversationTitle?: string,
-    replyTo?: ReplyTo
-  ): NostrEvent[] => {
-    return nip17.wrapManyEvents(
-      senderPrivateKey,
-      recipients,
-      message,
-      conversationTitle,
-      replyTo
-    );
-  };
+  // const sendManyEvents = (
+  //   senderPrivateKey: Uint8Array,
+  //   recipients: Recipient[],
+  //   message: string,
+  //   conversationTitle?: string,
+  //   replyTo?: ReplyTo
+  // ): NostrEvent[] => {
+  //   return nip17.wrapManyEvents(
+  //     senderPrivateKey,
+  //     recipients,
+  //     message,
+  //     conversationTitle,
+  //     replyTo
+  //   );
+  // };
 
   const unwrapEvent = (wrap: NostrEvent, recipientPrivateKey: Uint8Array) => {
     // @ts-expect-error
@@ -69,7 +68,6 @@ export default function usePrivateDirectMessage() {
 
   const addMessageToConversation = (
     event: NDKEvent,
-    partnerPubkey: string,
     privateKey: Uint8Array<ArrayBuffer>
   ) => {
     // if (!messagesByUser[partnerPubkey]) {
@@ -90,6 +88,7 @@ export default function usePrivateDirectMessage() {
     // }
 
     const unwrappedEvent = unwrapEvent(event, privateKey);
+    console.log("unwrappedEvent", unwrappedEvent);
     setMessagesByUser((prev) => [...prev, unwrappedEvent]);
   };
 
@@ -126,7 +125,8 @@ export default function usePrivateDirectMessage() {
       for (const event of unwrappedEvents) {
         const recipientPubkey = event.tags.find((tag) => tag[0] === "p")?.[1];
         if (recipientPubkey && !chatUsers[recipientPubkey]) {
-          const profile = await ndk
+          const profile = await getNDK()
+            .getInstance()
             .getUser({ pubkey: recipientPubkey })
             .fetchProfile();
 
@@ -146,7 +146,6 @@ export default function usePrivateDirectMessage() {
   };
 
   const getConversationMessages = async (
-    nsec: string,
     recipients: string[],
     options?: NDKSubscriptionOptions
   ) => {
@@ -217,14 +216,14 @@ export default function usePrivateDirectMessage() {
       // We need two filters to get the complete conversation:
       // 1. Messages sent BY current user TO recipients
       const outgoingFilter: NDKFilter = {
-        kinds: [NDKKind.EncryptedDirectMessage],
+        kinds: [NDKKind.PrivateDirectMessage],
         authors: [currentUser.pubkey],
         "#p": recipients,
       };
 
       // 2. Messages sent TO current user FROM recipients
       const incomingFilter: NDKFilter = {
-        kinds: [NDKKind.EncryptedDirectMessage],
+        kinds: [NDKKind.PrivateDirectMessage],
         authors: recipients,
         "#p": [currentUser.pubkey],
       };
@@ -247,7 +246,8 @@ export default function usePrivateDirectMessage() {
         const recipientPubkey = event.tags.find((tag) => tag[0] === "p")?.[1];
 
         if (recipientPubkey) {
-          addMessageToConversation(event, recipientPubkey, privateKey);
+          // addMessageToConversation(event, recipientPubkey, privateKey!);
+          addMessageToConversation(event, privateKey!);
         }
       });
 
@@ -257,7 +257,8 @@ export default function usePrivateDirectMessage() {
         const senderPubkey = event.pubkey;
 
         if (senderPubkey) {
-          addMessageToConversation(event, senderPubkey, privateKey);
+          // addMessageToConversation(event, senderPubkey, privateKey);
+          addMessageToConversation(event, privateKey);
         }
       });
 
@@ -285,14 +286,63 @@ export default function usePrivateDirectMessage() {
     }
   };
 
+  const sendDirectMessage = async (
+    recipient: Recipient | Recipient[],
+    message: string,
+    conversationTitle?: string,
+    replyTo?: ReplyTo
+  ) => {
+    if (!currentUser) {
+      return;
+    }
+
+    // @ts-expect-error
+    const privateKey = getNDK().getInstance().signer?._privateKey;
+
+    try {
+      const event = Array.isArray(recipient)
+        ? nip17.wrapManyEvents(
+            privateKey,
+            recipient,
+            message,
+            conversationTitle,
+            replyTo
+          )
+        : nip17.wrapEvent(
+            privateKey,
+            recipient,
+            message,
+            conversationTitle,
+            replyTo
+          );
+      debugger;
+
+      // Create an NDKEvent from the NostrEvent
+      const ndkEvent = new NDKEvent(getNDK().getInstance());
+      Object.assign(ndkEvent, event);
+
+      // Publish the event to the Nostr network
+      const publishedEvent = await ndkEvent.publish();
+
+      console.log("publishedEvent", publishedEvent);
+
+      // Add the message to the local state
+      addMessageToConversation(ndkEvent, privateKey);
+
+      return ndkEvent;
+    } catch (error) {
+      console.error("Error sending direct message:", error);
+      throw error;
+    }
+  };
+
   return {
-    sendEvent,
-    sendManyEvents,
     unwrapEvent,
     unwrapManyEvents,
     getUserChats,
     getConversationMessages,
     getConversationMessagesWebhook,
+    sendDirectMessage,
     isLoading,
     messagesByUser,
   };

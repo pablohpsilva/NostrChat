@@ -104,8 +104,8 @@ export default function useEncryptedMessage() {
       return null;
     }
 
+    // @ts-expect-error
     const privateKey = getNDK().getInstance().signer?._privateKey;
-    debugger;
 
     try {
       const recipientUser = getNDK()
@@ -144,6 +144,7 @@ export default function useEncryptedMessage() {
       return [];
     }
 
+    // @ts-expect-error
     const privateKey = getNDK().getInstance().signer?._privateKey;
 
     try {
@@ -287,6 +288,7 @@ export default function useEncryptedMessage() {
           messagesByUser[partnerPubkey] = [];
         }
 
+        // @ts-expect-error
         const privateKey = getNDK().getInstance().signer?._privateKey;
 
         // Add message if it doesn't already exist

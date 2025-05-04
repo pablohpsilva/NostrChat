@@ -19,7 +19,6 @@ const ChatList = ({
   error,
   nip04UserProfiles,
   nip17UserProfiles,
-  onChatClick,
   className,
 }: ChatListProps) => {
   const hasPrivateChats = Object.keys(nip17UserProfiles).length > 0;

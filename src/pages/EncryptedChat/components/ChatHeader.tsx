@@ -1,6 +1,7 @@
-import { ROUTES } from "@/consts/routes";
 import { NDKUserProfile } from "@nostr-dev-kit/ndk";
 import { Link } from "react-router-dom";
+
+import { ROUTES } from "@/consts/routes";
 
 interface ChatHeaderProps {
   userProfile: NDKUserProfile;

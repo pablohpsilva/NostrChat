@@ -1,4 +1,3 @@
-import { getNDK } from "@/components/NDKHeadless";
 import { getRelays, removeRelays, storeRelays } from "@/libs/local-storage";
 import { RelayDict } from "@/types";
 import { useEffect, useState } from "react";

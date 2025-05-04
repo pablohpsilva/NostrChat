@@ -1,59 +1,56 @@
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/consts/routes";
-import { useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
-
-import { ChatHeader, MessageInput, MessageList } from "./components";
-import usePrivateDirectMessage from "@/hooks/usePrivateDirectMessage";
+import { NDKUserProfile, useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 import { useEffect } from "react";
-import { getKeys } from "@/libs/local-storage";
 
-export default function PrivateChatPage() {
+import { ChatHeader, EmptyChat, MessageInput, MessageList } from "./components";
+import { ROUTES } from "@/consts/routes";
+import usePrivateDirectMessage from "@/hooks/usePrivateDirectMessage";
+
+export default function PrivateChatPage({
+  userProfile,
+}: {
+  userProfile: NDKUserProfile;
+}) {
   const currentUser = useNDKCurrentUser();
   const navigate = useNavigate();
   const {
-    sendDirectMessage,
-    getUserChats,
+    isLoading,
     getConversationMessagesWebhook,
     messagesByUser,
+    sendDirectMessage,
   } = usePrivateDirectMessage();
 
   const handleSendMessage = async (newMessage: string) => {
-    // if (!selectedChat || !newMessage.trim() || !currentUser) return;
-    // await sendDirectMessage(selectedChat, newMessage);
+    if (!newMessage.trim() || !currentUser || !userProfile.pubkey) {
+      return;
+    }
+
+    await sendDirectMessage({ publicKey: `${userProfile.pubkey}` }, newMessage);
   };
 
   const handleBackToList = () => {
     navigate(ROUTES.CHAT);
   };
 
-  // useEffect(() => {
-  //   if (currentUser) {
-  //     getConversationMessagesWebhook(currentUser.pubkey);
-  //   }
-  // }, [currentUser]);
-
   useEffect(() => {
-    (async () => {
-      const { nsec } = await getKeys();
-      console.log(await getUserChats(nsec!));
-    })();
-  }, []);
+    getConversationMessagesWebhook([`${userProfile.pubkey}`]);
+  }, [userProfile]);
+
+  console.log({
+    isLoading,
+    messagesByUser,
+  });
 
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-col h-full">
-        {/* <ChatHeader
-          selectedChat={selectedChat}
-          userProfiles={userProfiles}
-          messages={messages}
-          onBackClick={handleBackToList}
-        />
+        <ChatHeader userProfile={userProfile!} onBackClick={handleBackToList} />
 
-        <MessageList
-          messages={messages}
-          decryptedMessages={decryptedMessages}
-          currentUserPubkey={currentUser?.pubkey}
-        /> */}
+        {messagesByUser.length ? (
+          <MessageList messages={messagesByUser} />
+        ) : (
+          <EmptyChat onBackClick={handleBackToList} />
+        )}
 
         <MessageInput onSendMessage={handleSendMessage} />
       </div>

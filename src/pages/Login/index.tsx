@@ -21,10 +21,9 @@ export default function Login() {
   const login = useNDKSessionLogin();
 
   const handleLogin = async (keys: KeysV2) => {
-    console.log("handleLogin", keys);
     const signer = new NDKPrivateKeySigner(keys.nsec);
 
-    await saveSigner(keys);
+    // await saveSigner(keys);
 
     await login(signer);
     // Redirect to the app after successful login
@@ -32,7 +31,7 @@ export default function Login() {
   };
 
   const handleCreateAccount = async (keys: KeysV2) => {
-    await saveSigner(keys);
+    // await saveSigner(keys);
 
     const signer = new NDKPrivateKeySigner(keys.nsec);
     await login(signer);

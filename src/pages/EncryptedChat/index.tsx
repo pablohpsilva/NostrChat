@@ -1,10 +1,13 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/consts/routes";
 import { NDKUserProfile, useNDKCurrentUser } from "@nostr-dev-kit/ndk-hooks";
 
-import { ChatHeader, MessageInput, MessageList } from "./components";
-import { useEffect } from "react";
+import MessageList from "./components/MessageList";
+import MessageInput from "./components/MessageInput";
+import ChatHeader from "./components/ChatHeader";
 import useEncryptedMessage from "@/hooks/useEncryptedMessage";
+import EmptyChat from "../PrivateChat/components/EmptyChat";
 
 export default function EncryptedChatPage({
   userProfile,
@@ -37,7 +40,11 @@ export default function EncryptedChatPage({
       <div className="flex flex-col h-full">
         <ChatHeader userProfile={userProfile} onBackClick={handleBackToList} />
 
-        <MessageList messages={messages} />
+        {messages.length ? (
+          <MessageList messages={messages} />
+        ) : (
+          <EmptyChat onBackClick={handleBackToList} />
+        )}
 
         <MessageInput onSendMessage={handleSendMessage} />
       </div>
