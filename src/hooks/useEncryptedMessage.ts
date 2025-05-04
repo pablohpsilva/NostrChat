@@ -154,13 +154,13 @@ export default function useEncryptedMessage() {
       // Filter for messages between the current user and the specified pubkey
       const outgoingFilter: NDKFilter = {
         kinds: [NDKKind.EncryptedDirectMessage],
-        authors: [currentUser.pubkey],
+        // authors: [currentUser.pubkey],
         "#p": [pubkey],
       };
 
       const incomingFilter: NDKFilter = {
         kinds: [NDKKind.EncryptedDirectMessage],
-        authors: [pubkey],
+        // authors: [pubkey],
         "#p": [currentUser.pubkey],
       };
 
@@ -182,56 +182,6 @@ export default function useEncryptedMessage() {
           content: nip04.decrypt(privateKey, pubkey, event.content),
         } as NDKEvent;
       });
-
-      //   // Store messages in state
-      //   setMessages((prev) => ({
-      //     ...prev,
-      //     [pubkey]: allEvents,
-      //   }));
-
-      //   // Decrypt all messages
-      //   for (const event of allEvents) {
-      //     if (!decryptedIdsRef.current.has(event.id)) {
-      //       try {
-      //         let decryptedContent: string | null = null;
-
-      //         // For outgoing messages (we are the author)
-      //         if (event.pubkey === currentUser.pubkey) {
-      //           decryptedContent = await nip04.decrypt(
-      //             privateKey,
-      //             pubkey,
-      //             event.content
-      //           );
-      //         }
-      //         // For incoming messages (we are the recipient)
-      //         else {
-      //           decryptedContent = await nip04.decrypt(
-      //             privateKey,
-      //             pubkey,
-      //             event.content
-      //           );
-      //         }
-
-      //         if (decryptedContent) {
-      //           setDecryptedMessages((prev) => ({
-      //             ...prev,
-      //             [event.id]: decryptedContent,
-      //           }));
-      //         }
-
-      //         decryptedIdsRef.current.add(event.id);
-      //       } catch (err) {
-      //         console.error("Error decrypting message:", err);
-      //         setDecryptedMessages((prev) => ({
-      //           ...prev,
-      //           [event.id]: "Error decrypting message",
-      //         }));
-      //         decryptedIdsRef.current.add(event.id);
-      //       }
-      //     }
-      //   }
-
-      //   return allEvents;
     } catch (err) {
       console.error("Error loading messages:", err);
       setError(
@@ -259,14 +209,14 @@ export default function useEncryptedMessage() {
       // Filter for encrypted DMs sent from the current user to the specified pubkey
       const outgoingFilter: NDKFilter = {
         kinds: [NDKKind.EncryptedDirectMessage],
-        authors: [currentUser.pubkey],
+        // authors: [currentUser.pubkey],
         "#p": [pubkey],
       };
 
       // Filter for encrypted DMs sent from the specified pubkey to the current user
       const incomingFilter: NDKFilter = {
         kinds: [NDKKind.EncryptedDirectMessage],
-        authors: [pubkey],
+        // authors: [pubkey],
         "#p": [currentUser.pubkey],
       };
 

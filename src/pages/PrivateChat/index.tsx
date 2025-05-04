@@ -36,11 +36,6 @@ export default function PrivateChatPage({
     getConversationMessagesWebhook([`${userProfile.pubkey}`]);
   }, [userProfile]);
 
-  console.log({
-    isLoading,
-    messagesByUser,
-  });
-
   return (
     <div className="flex flex-col h-screen">
       <div className="flex flex-col h-full">
@@ -52,7 +47,7 @@ export default function PrivateChatPage({
           <EmptyChat onBackClick={handleBackToList} />
         )}
 
-        <MessageInput onSendMessage={handleSendMessage} />
+        <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />
       </div>
     </div>
   );
