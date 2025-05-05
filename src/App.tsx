@@ -1,15 +1,24 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-
-import Layout from "./pages/Home/Layout";
-import Home from "./pages/Home";
-import ChatListPage from "./pages/ChatList";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
-import NDKHeadless from "./components/NDKHeadless";
-
+import { lazy, Suspense } from "react";
 import { Outlet } from "react-router-dom";
+
+import NDKHeadless from "./components/NDKHeadless";
 import GuardedRoute from "./components/GuardedRoute";
-import PrivateEncryptedChatRoutePage from "./pages/PrivateEncryptedChatRoutePage";
+
+// Lazy load components
+const Layout = lazy(() => import("./pages/Home/Layout"));
+const Home = lazy(() => import("./pages/Home"));
+const ChatListPage = lazy(() => import("./pages/ChatList"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Login = lazy(() => import("./pages/Login"));
+const PrivateEncryptedChatRoutePage = lazy(
+  () => import("./pages/PrivateEncryptedChatRoutePage")
+);
+
+// Loading component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen">Loading...</div>
+);
 
 const router = createBrowserRouter([
   {
@@ -17,24 +26,34 @@ const router = createBrowserRouter([
     element: (
       <>
         <NDKHeadless />
-        <Outlet />
+        <Suspense fallback={<LoadingFallback />}>
+          <Outlet />
+        </Suspense>
       </>
     ),
-    errorElement: <NotFound />,
+    errorElement: (
+      <Suspense fallback={<LoadingFallback />}>
+        <NotFound />
+      </Suspense>
+    ),
     children: [
       {
         index: true,
         element: (
-          <Layout>
-            <Home />
-          </Layout>
+          <Suspense fallback={<LoadingFallback />}>
+            <Layout>
+              <Home />
+            </Layout>
+          </Suspense>
         ),
       },
       {
         path: "chat",
         element: (
           <GuardedRoute>
-            <ChatListPage />
+            <Suspense fallback={<LoadingFallback />}>
+              <ChatListPage />
+            </Suspense>
           </GuardedRoute>
         ),
       },
@@ -42,13 +61,19 @@ const router = createBrowserRouter([
         path: "chat/:nip/:pubkey",
         element: (
           <GuardedRoute>
-            <PrivateEncryptedChatRoutePage />
+            <Suspense fallback={<LoadingFallback />}>
+              <PrivateEncryptedChatRoutePage />
+            </Suspense>
           </GuardedRoute>
         ),
       },
       {
         path: "login",
-        element: <Login />,
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Login />
+          </Suspense>
+        ),
       },
     ],
   },
