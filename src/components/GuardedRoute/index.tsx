@@ -8,35 +8,41 @@ interface GuardedRouteProps {
 }
 
 let interval: number;
+let retry: number = 0;
 
 const GuardedRoute = ({ children }: GuardedRouteProps) => {
   const navigate = useNavigate();
   const maxRetries = 3;
-  const [retry, setRetry] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  const checkActiveUser = () => {
+    const activeUser = getNDK().getInstance().activeUser;
+    if (retry !== maxRetries) {
+      retry++;
+    }
+
+    if (activeUser) {
+      window.clearInterval(interval);
+      setIsLoading(false);
+      retry = 0;
+      return;
+    }
+
+    if (retry >= maxRetries) {
+      setIsLoading(false);
+      window.clearInterval(interval);
+      navigate(ROUTES.LOGIN);
+    }
+  };
 
   useEffect(() => {
     setIsLoading(true);
-    interval = window.setInterval(() => {
-      const activeUser = getNDK().getInstance().activeUser;
-      if (retry !== maxRetries) {
-        setRetry((prev) => prev + 1);
-      }
+    if (interval) {
+      window.clearInterval(interval);
+    }
 
-      if (activeUser) {
-        window.clearInterval(interval);
-        setIsLoading(false);
-      }
-
-      if (retry === maxRetries) {
-        setIsLoading(false);
-        window.clearInterval(interval);
-        navigate(ROUTES.LOGIN);
-      }
-    }, 1000);
-
+    interval = window.setInterval(checkActiveUser, 1000);
     return () => {
-      setIsLoading(false);
       window.clearInterval(interval);
     };
   }, []);

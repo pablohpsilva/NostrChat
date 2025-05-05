@@ -1,8 +1,8 @@
-interface EmptyChatProps {
+export interface EmptyChatProps {
   onBackClick: () => void;
 }
 
-const EmptyChat = ({ onBackClick }: EmptyChatProps) => {
+const EmptyChat = () => {
   return (
     <div className="flex flex-col h-full">
       {/* <div className="p-4 border-b border-gray-200 flex items-center">

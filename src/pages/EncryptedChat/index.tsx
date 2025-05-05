@@ -40,11 +40,7 @@ export default function EncryptedChatPage({
       <div className="flex flex-col h-full">
         <ChatHeader userProfile={userProfile} onBackClick={handleBackToList} />
 
-        {messages.length ? (
-          <MessageList messages={messages} />
-        ) : (
-          <EmptyChat onBackClick={handleBackToList} />
-        )}
+        {messages.length ? <MessageList messages={messages} /> : <EmptyChat />}
 
         <MessageInput onSendMessage={handleSendMessage} />
       </div>

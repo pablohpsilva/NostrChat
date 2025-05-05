@@ -4,8 +4,13 @@ import { NDKUserProfile } from "@nostr-dev-kit/ndk";
 import usePrivateDirectMessage from "@/hooks/usePrivateDirectMessage";
 
 import ChatList from "./components/ChatList";
+import { useNDKSessionLogout } from "@nostr-dev-kit/ndk-hooks";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/consts/routes";
 
 function ChatListPage() {
+  const logout = useNDKSessionLogout();
+  const navigate = useNavigate();
   const { getUserChats: getEncryptedUserChats, isLoading: isEncryptedLoading } =
     useEncryptedMessage();
   const { getUserChats: getPrivateUserChats, isLoading: isPrivateLoading } =
@@ -31,6 +36,11 @@ function ChatListPage() {
     setUserChats({ encryptedUserChats, privateUserChats });
   };
 
+  const handleOnClickLogout = () => {
+    logout();
+    navigate(ROUTES.LOGIN);
+  };
+
   useEffect(() => {
     getUserChats();
   }, []);
@@ -43,6 +53,7 @@ function ChatListPage() {
         nip04UserProfiles={userChats.encryptedUserChats}
         nip17UserProfiles={userChats.privateUserChats}
         onChatClick={() => {}}
+        handleOnClickLogout={handleOnClickLogout}
       />
     </div>
   );
