@@ -4,7 +4,6 @@ import { useNDKSessionLogin } from "@nostr-dev-kit/ndk-hooks";
 import { NDKPrivateKeySigner } from "@nostr-dev-kit/ndk";
 
 import { APP_NAME } from "@/consts";
-import { saveSigner } from "@/libs/signer-persistence";
 import { ROUTES } from "@/consts/routes";
 import { LoginMode } from "./types";
 import { LoginForm } from "./components/LoginForm";

@@ -8,11 +8,7 @@ interface MessageListProps {
   messages: NDKEvent[];
 }
 
-const MessageList = ({
-  messages,
-  decryptedMessages,
-  currentUserPubkey,
-}: MessageListProps) => {
+const MessageList = ({ messages }: MessageListProps) => {
   const currentUser = useNDKCurrentUser();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

@@ -12,6 +12,7 @@ interface ChatListProps {
   nip17UserProfiles: Record<string, NDKUserProfile>;
   onChatClick: (kind: `NIP${NDKKind}`, pubkey: string) => void;
   className?: string;
+  handleOnClickLogout: () => void;
 }
 
 const ChatList = ({
@@ -20,6 +21,7 @@ const ChatList = ({
   nip04UserProfiles,
   nip17UserProfiles,
   className,
+  handleOnClickLogout,
 }: ChatListProps) => {
   const hasPrivateChats = Object.keys(nip17UserProfiles).length > 0;
   const hasPublicChats = Object.keys(nip04UserProfiles).length > 0;
@@ -33,7 +35,10 @@ const ChatList = ({
     <div className={clsx("flex-1 overflow-y-auto", className)}>
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between">
-          <button className="text-gray-600 focus:outline-none">
+          <button
+            className="text-gray-600 focus:outline-none"
+            onClick={handleOnClickLogout}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"

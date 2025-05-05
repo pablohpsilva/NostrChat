@@ -68,7 +68,7 @@ export default function SearchStartChat({ npub }: { npub: string }) {
         <div>
           <Link
             to={fillRoute(ROUTES.CHAT_ID, {
-              nip: `NIP${NDKKind.PrivateDirectMessage}`,
+              nip: `NIP${NDKKind.EncryptedDirectMessage}`,
               pubkey: npub,
             })}
           >

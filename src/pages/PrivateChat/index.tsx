@@ -44,7 +44,7 @@ export default function PrivateChatPage({
         {messagesByUser.length ? (
           <MessageList messages={messagesByUser} />
         ) : (
-          <EmptyChat onBackClick={handleBackToList} />
+          <EmptyChat />
         )}
 
         <MessageInput onSendMessage={handleSendMessage} isLoading={isLoading} />

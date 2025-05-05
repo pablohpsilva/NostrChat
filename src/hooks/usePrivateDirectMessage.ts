@@ -2,7 +2,6 @@ import {
   NDKEvent,
   NDKFilter,
   NDKKind,
-  NDKPrivateKeySigner,
   NDKSubscriptionOptions,
   NDKUserProfile,
   NostrEvent,
@@ -18,38 +17,6 @@ export default function usePrivateDirectMessage() {
   const currentUser = useNDKCurrentUser();
   const [isLoading, setLoading] = useState(false);
   const [messagesByUser, setMessagesByUser] = useState<NDKEvent[]>([]);
-
-  // const sendEvent = (
-  //   senderPrivateKey: Uint8Array,
-  //   recipient: Recipient,
-  //   message: string,
-  //   conversationTitle?: string,
-  //   replyTo?: ReplyTo
-  // ): NostrEvent => {
-  //   return nip17.wrapEvent(
-  //     senderPrivateKey,
-  //     recipient,
-  //     message,
-  //     conversationTitle,
-  //     replyTo
-  //   );
-  // };
-
-  // const sendManyEvents = (
-  //   senderPrivateKey: Uint8Array,
-  //   recipients: Recipient[],
-  //   message: string,
-  //   conversationTitle?: string,
-  //   replyTo?: ReplyTo
-  // ): NostrEvent[] => {
-  //   return nip17.wrapManyEvents(
-  //     senderPrivateKey,
-  //     recipients,
-  //     message,
-  //     conversationTitle,
-  //     replyTo
-  //   );
-  // };
 
   const unwrapEvent = (wrap: NostrEvent, recipientPrivateKey: Uint8Array) => {
     // @ts-expect-error
@@ -127,7 +94,6 @@ export default function usePrivateDirectMessage() {
       //   if (options?.until) filter.until = options.until;
 
       const _events = await getNDK().getInstance().fetchEvents(filter, options);
-      debugger;
 
       const events = Array.from(_events);
       const unwrappedEvents = unwrapManyEvents(events, privateKey);
@@ -316,56 +282,84 @@ export default function usePrivateDirectMessage() {
     const privateKey = getNDK().getInstance().signer?._privateKey;
 
     try {
-      const eventToRecipient = nip17.wrapEvent(
-        privateKey,
-        recipient,
-        message,
-        conversationTitle,
-        replyTo
+      const recipients = [recipient, { publicKey: currentUser.pubkey }].map(
+        (e) => ({ ...e, relayUrl: "wss://inbox.azzamo.net/" })
       );
-      const eventToSender = nip17.wrapEvent(
-        privateKey,
-        { publicKey: currentUser.pubkey },
-        message,
-        conversationTitle,
-        replyTo
-      );
+      console.log("recipients", recipients);
 
-      // Create an NDKEvent from the NostrEvent
-      const ndkEventToRecipient = Object.assign(
-        new NDKEvent(getNDK().getInstance()),
-        eventToRecipient
-      );
-      const ndkEventToSender = Object.assign(
-        new NDKEvent(getNDK().getInstance()),
-        eventToSender
-      );
+      const events = nip17
+        .wrapManyEvents(
+          privateKey,
+          [recipient],
+          message,
+          conversationTitle,
+          replyTo
+        )
+        .map((e) => ({
+          ...e,
+          tags: [[...e.tags[0], "wss://inbox.azzamo.net/"]],
+        }));
 
-      // Publish the event to the Nostr network
-      const publishedEventToRecipient = await ndkEventToRecipient.publish();
-      console.log("Direct message published:", publishedEventToRecipient);
+      for (const e of events) {
+        const publishedEvent = Object.assign(
+          new NDKEvent(getNDK().getInstance()),
+          e
+        );
+        console.log("publishedEvent", publishedEvent);
+        await publishedEvent.publish();
+        console.log("publishedEvent", publishedEvent);
+      }
 
-      ndkEventToRecipient.on("ok", () => {
-        console.log("Direct message published to sender:", ndkEventToSender);
-      });
-      ndkEventToRecipient.on("failed", () => {
-        console.log("Direct message published to sender:", ndkEventToSender);
-      });
-      ndkEventToSender.on("failed", () => {
-        console.log("Direct message published to sender:", ndkEventToSender);
-      });
-      ndkEventToSender.on("ok", () => {
-        console.log("Direct message published to sender:", ndkEventToSender);
-      });
+      // const eventToRecipient = nip17.wrapEvent(
+      //   privateKey,
+      //   recipient,
+      //   message,
+      //   conversationTitle,
+      //   replyTo
+      // );
+      // const eventToSender = nip17.wrapEvent(
+      //   privateKey,
+      //   { publicKey: currentUser.pubkey },
+      //   message,
+      //   conversationTitle,
+      //   replyTo
+      // );
 
-      // Publish the event to the Nostr network
-      const publishedEventToSender = await ndkEventToSender.publish();
-      console.log("Direct message published:", publishedEventToSender);
+      // // Create an NDKEvent from the NostrEvent
+      // const ndkEventToRecipient = Object.assign(
+      //   new NDKEvent(getNDK().getInstance()),
+      //   eventToRecipient
+      // );
+      // const ndkEventToSender = Object.assign(
+      //   new NDKEvent(getNDK().getInstance()),
+      //   eventToSender
+      // );
+
+      // // Publish the event to the Nostr network
+      // const publishedEventToRecipient = await ndkEventToRecipient.publish();
+      // console.log("Direct message published:", publishedEventToRecipient);
+
+      // ndkEventToRecipient.on("ok", () => {
+      //   console.log("Direct message published to sender:", ndkEventToSender);
+      // });
+      // ndkEventToRecipient.on("failed", () => {
+      //   console.log("Direct message published to sender:", ndkEventToSender);
+      // });
+      // ndkEventToSender.on("failed", () => {
+      //   console.log("Direct message published to sender:", ndkEventToSender);
+      // });
+      // ndkEventToSender.on("ok", () => {
+      //   console.log("Direct message published to sender:", ndkEventToSender);
+      // });
+
+      // // Publish the event to the Nostr network
+      // const publishedEventToSender = await ndkEventToSender.publish();
+      // console.log("Direct message published:", publishedEventToSender);
 
       // Add the message to the local state
-      addMessageToConversation(ndkEventToSender, privateKey);
+      // addMessageToConversation(ndkEventToSender, privateKey);
 
-      return ndkEventToSender;
+      // return ndkEventToSender;
     } catch (error) {
       console.error("Error sending direct message:", error);
       throw error;

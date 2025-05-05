@@ -8,6 +8,7 @@ export const DEFAULT_RELAYS: RelayDict = {
   "wss://relay.damus.io": { read: true, write: true },
   "wss://relay.snort.social": { read: true, write: false },
   "wss://nos.lol": { read: true, write: true },
+  "wss://inbox.azzamo.net": { read: true, write: true },
 };
 
 export default function useRelays() {
