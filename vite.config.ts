@@ -82,18 +82,18 @@ export default defineConfig({
           }
 
           // Crypto and encoding libraries
-          if (
-            id.includes("node_modules/crypto") ||
-            (id.includes("node_modules/noble") &&
-              !id.includes("node_modules/@noble/secp256k1")) ||
-            id.includes("node_modules/secp256k1") ||
-            id.includes("node_modules/bech32") ||
-            id.includes("node_modules/bitcoinjs") ||
-            id.includes("node_modules/bs58") ||
-            id.includes("node_modules/buffer")
-          ) {
-            return "crypto";
-          }
+          // if (
+          //   id.includes("node_modules/crypto") ||
+          //   (id.includes("node_modules/noble") &&
+          //     !id.includes("node_modules/@noble/secp256k1")) ||
+          //   id.includes("node_modules/secp256k1") ||
+          //   id.includes("node_modules/bech32") ||
+          //   id.includes("node_modules/bitcoinjs") ||
+          //   id.includes("node_modules/bs58") ||
+          //   id.includes("node_modules/buffer")
+          // ) {
+          //   return "crypto";
+          // }
 
           // Utility libraries
           if (
